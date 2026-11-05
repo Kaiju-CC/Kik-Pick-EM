@@ -1,0 +1,34 @@
+rules_version = '2';
+// Keeping It Kayfabe Pick'em: anyone with the link can read and make picks,
+// but only in the exact shapes the page writes. Nothing else can be stored or deleted.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // events/<eventId> = { results: { matchId: optionIndex } }
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update: if eventId.matches('^[a-z0-9]{1,16}$')
+        && request.resource.data.keys().hasOnly(['results'])
+        && request.resource.data.results is map
+        && request.resource.data.results.size() <= 30;
+    }
+
+    // picks/<eventId>-<host 0..2> = { sel: { matchId: optionIndex } }
+    match /picks/{pickId} {
+      allow read: if true;
+      allow create, update: if pickId.matches('^[a-z0-9]{1,16}-[0-2]$')
+        && request.resource.data.keys().hasOnly(['sel'])
+        && request.resource.data.sel is map
+        && request.resource.data.sel.size() <= 30;
+    }
+
+    // season/settings = { names: [three host names] }
+    match /season/{docId} {
+      allow read: if true;
+      allow create, update: if docId == 'settings'
+        && request.resource.data.keys().hasOnly(['names'])
+        && request.resource.data.names is list
+        && request.resource.data.names.size() == 3;
+    }
+  }
+}

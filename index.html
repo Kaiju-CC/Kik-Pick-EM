@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Keeping It Kayfabe season pick'em for WWE premium live events.">
+<title>Kayfabe Pick'em 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow:wght@400;600;700&family=IBM+Plex+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: a season ledger. Pinned season scoreboard, tabs per premium live event, each event a column of match "accounts" (contenders × hosts + result) */
+:root{
+  --bg:#eef1ec; --paper:#fbfcf9; --ink:#14201a; --muted:#5b6a61; --line:#cfd8d0;
+  --vault:#0f4a32; --brass:#b8862b; --brass-soft:#f3e6c8; --hit:#1d7a4c; --miss:#b23b2e;
+  --display:"Alfa Slab One",Rockwell,"Roboto Slab",Georgia,serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c1511; --paper:#13201a; --ink:#e7eee9; --muted:#93a59a; --line:#26372e;
+  --vault:#3fae7c; --brass:#e0b45a; --brass-soft:#3a2f17; --hit:#4cc98a; --miss:#ef7a6c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1511; --paper:#13201a; --ink:#e7eee9; --muted:#93a59a; --line:#26372e;
+  --vault:#3fae7c; --brass:#e0b45a; --brass-soft:#3a2f17; --hit:#4cc98a; --miss:#ef7a6c; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45}
+.wrap{max-width:860px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:grid;gap:16px}
+header{display:grid;gap:4px}
+.eyebrow{font:600 12px/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(30px,7vw,48px);line-height:1;margin:0;color:var(--vault);text-wrap:balance}
+.meta{color:var(--muted);margin:0}
+.board{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:6px}
+.board-label{font:600 11px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.hosts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.who{display:grid;gap:2px;min-width:0}
+.who input{font:700 15px var(--body);color:var(--ink);background:transparent;border:0;border-bottom:1px dashed var(--line);padding:2px 0;width:100%;min-width:0}
+.who input:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.score{font:700 28px/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--vault)}
+.score small{font-size:13px;color:var(--muted);font-weight:500}
+.who.lead .score{color:var(--brass)}
+.who.lead .score::after{content:" ★";font-size:16px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:2px solid var(--line)}
+.tab{font:700 14px var(--body);background:transparent;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;padding:8px 12px;color:var(--muted);cursor:pointer;border-radius:0}
+.tab[aria-selected="true"]{color:var(--vault);border-bottom-color:var(--brass)}
+.tab:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.tab .chip{font:700 10px var(--mono);margin-left:6px;padding:2px 6px;border-radius:999px;background:var(--brass-soft);color:var(--brass);vertical-align:2px}
+.evhead{display:grid;gap:4px}
+.evhead h2{font-family:var(--display);font-weight:400;font-size:clamp(24px,5vw,34px);line-height:1.05;margin:0;color:var(--vault)}
+.evscores{display:flex;flex-wrap:wrap;gap:6px 16px;font:500 13px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.evscores b{color:var(--ink)}
+.match{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.mh{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.mh h3{margin:0;font:700 17px/1.2 var(--body);text-wrap:balance}
+.stip{font:600 11px/1 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.flag{font:700 10px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--miss);margin-left:6px}
+.pts{font:700 12px var(--mono);background:var(--brass-soft);color:var(--brass);border-radius:999px;padding:3px 8px}
+.case .mh{background:linear-gradient(90deg,var(--brass-soft),transparent)}
+.grid{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:420px}
+th,td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+th{font:600 11px/1.1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+th.res,td.res{background:color-mix(in srgb,var(--vault) 7%,transparent)}
+td.name{text-align:left;font-weight:600;padding-left:14px}
+th.name{text-align:left;padding-left:14px}
+.pick{appearance:none;width:22px;height:22px;border:2px solid var(--line);border-radius:50%;cursor:pointer;background:var(--paper);display:inline-grid;place-content:center;margin:0}
+.pick:checked{border-color:var(--vault);background:var(--vault)}
+.pick:checked::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--paper)}
+.res .pick{border-radius:5px}
+.res .pick:checked{border-color:var(--brass);background:var(--brass)}
+.pick:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+td.hit .pick:checked{background:var(--hit);border-color:var(--hit)}
+td.miss .pick:checked{background:var(--miss);border-color:var(--miss)}
+tr.winner td.name::after{content:"  WINNER";font:700 10px var(--mono);color:var(--brass);letter-spacing:.08em}
+.sect{font-family:var(--display);font-weight:400;font-size:22px;margin:6px 0 0;color:var(--vault)}
+.stack{display:grid;gap:14px}
+.season{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+.season table{min-width:360px;font-variant-numeric:tabular-nums}
+.season td,.season th{padding:12px 10px}
+.season td{font:500 15px var(--mono)}
+.season td.name{font:600 15px var(--body)}
+.season tr.total td{font-weight:700;color:var(--vault);background:color-mix(in srgb,var(--brass) 10%,transparent)}
+.season td.top{color:var(--brass);font-weight:700}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button.btn{font:600 14px var(--body);border-radius:8px;padding:9px 14px;cursor:pointer;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+button.btn:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+button.danger{color:var(--miss);border-color:color-mix(in srgb,var(--miss) 40%,var(--line))}
+.note{color:var(--muted);font-size:13px;margin:0;max-width:65ch}
+.copied{color:var(--hit);font-size:13px}
+.status{margin:4px 0 0;font:600 12px/1.3 var(--body);color:var(--muted);display:flex;align-items:center;gap:8px}
+.status::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.status[data-state="ok"]::before{background:var(--hit);box-shadow:0 0 0 3px color-mix(in srgb,var(--hit) 25%,transparent)}
+.status[data-state="warn"]::before{background:var(--miss)}
+.status[data-state="local"]::before{background:var(--brass)}
+.banner{background:var(--brass-soft);border:1px solid color-mix(in srgb,var(--brass) 45%,var(--line));border-radius:10px;padding:12px 14px;display:grid;gap:10px}
+.banner p{margin:0;font-weight:600}
+.pick:disabled{cursor:default;opacity:.7}
+.who input:disabled{border-bottom-color:transparent;opacity:1}
+textarea{width:100%;font:13px var(--mono);background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Keeping It Kayfabe · Watch-along</span>
+    <h1>Pick'em 2026</h1>
+    <p class="meta">Every premium live event counts toward one season total.</p>
+    <p class="status" id="status" data-state="wait" aria-live="polite">Connecting to the pick database…</p>
+  </header>
+
+
+  <section class="board" aria-label="Season scoreboard">
+    <span class="board-label">Season total</span>
+    <div class="hosts" id="board"></div>
+  </section>
+
+  <nav class="tabs" role="tablist" id="tabs" aria-label="Events"></nav>
+
+  <main id="view" class="stack"></main>
+
+  <div class="tools">
+    <button class="btn" id="copy">Copy picks as text</button>
+    <button class="btn danger" id="reset">Clear this event's picks</button>
+    <span id="confirm" hidden><button class="btn danger" id="yes">Yes, clear them</button> <button class="btn" id="no">Keep</button></span>
+    <span id="msg" class="copied" aria-live="polite"></span>
+  </div>
+  <p class="note">Anyone with this link can make picks, and changes show up for everyone within a few seconds, so only share it with your crew. Each host picks a circle per match before bell time; during the show, tick the square in the <b>Result</b> column. Ladder matches are worth 3 points.</p>
+</div>
+
+<script>
+const EVENTS=[
+ {id:"mitb",tab:"Money in the Bank",name:"Money in the Bank",meta:"Sat Oct 10 · Smoothie King Center, New Orleans",
+  matches:[
+   {id:"whc",title:"Roman Reigns (c) vs. LA Knight",stip:"World Heavyweight Championship",pts:1,opts:["Roman Reigns","LA Knight"]},
+   {id:"wwc",title:"Stephanie Vaquer (c) vs. Becky Lynch vs. Liv Morgan",stip:"Women's World Championship · Triple threat",pts:1,opts:["Stephanie Vaquer","Becky Lynch","Liv Morgan"]},
+   {id:"mmitb",title:"Men's Money in the Bank",stip:"Six-man ladder match",pts:3,case:true,opts:["Bron Breakker","Je'Von Evans","Trick Williams","Penta","CM Punk","Kevin Owens"]},
+   {id:"wmitb",title:"Women's Money in the Bank",stip:"Six-woman ladder match",pts:3,case:true,opts:["Sol Ruca","Lola Vice","Jacy Jayne","Roxanne Perez","Lash Legend","Tiffany Stratton"]},
+   {id:"femi",title:"Oba Femi vs. Bronson Reed",stip:"Singles match",pts:1,opts:["Oba Femi","Bronson Reed"]}
+  ],
+  props:[
+   {id:"cash",title:"Does anyone cash in a briefcase tonight?",stip:"Prop",pts:1,opts:["Yes","No"]},
+   {id:"titles",title:"How many titles change hands?",stip:"Prop",pts:1,opts:["0","1","2"]},
+   {id:"return",title:"Surprise return or debut on the show?",stip:"Prop",pts:1,opts:["Yes","No"]},
+   {id:"main",title:"What closes the show?",stip:"Prop",pts:1,opts:["Reigns vs. Knight","Women's title","Men's ladder","Women's ladder"]}
+  ]
+ },
+ {id:"cj",tab:"Crown Jewel",chip:"Sat",name:"Crown Jewel",meta:"Sat Nov 7 · Riyadh, Saudi Arabia · 11:00 AM Central",
+  matches:[
+   {id:"mcj",title:"Roman Reigns vs. Sami Zayn",stip:"Men's Crown Jewel Championship · World vs. Undisputed champ",pts:1,opts:["Roman Reigns","Sami Zayn"]},
+   {id:"wcj",title:"Liv Morgan vs. Chelsea Green",stip:"Women's Crown Jewel Championship · Champ vs. champ",pts:1,opts:["Liv Morgan","Chelsea Green"]},
+   {id:"lms",title:"Cody Rhodes vs. Randy Orton",stip:"Last Man Standing",pts:2,opts:["Cody Rhodes","Randy Orton"]},
+   {id:"tag",title:"The Vision (c) vs. Je'Von Evans & Penta",stip:"World Tag Team Championship",pts:1,opts:["The Vision (Breakker & Theory)","Je'Von Evans & Penta"]},
+   {id:"fg",title:"Finn Bálor vs. GUNTHER",stip:"Singles match",reported:true,pts:1,opts:["Finn Bálor","GUNTHER"]}
+  ],
+  props:[
+   {id:"cash",title:"Does a briefcase get cashed in?",stip:"Prop · Penta and Tiffany Stratton hold them",pts:1,opts:["Yes, Penta","Yes, Tiffany","No"]},
+   {id:"titles",title:"How many titles change hands?",stip:"Prop · tag titles only",pts:1,opts:["0","1"]},
+   {id:"return",title:"Surprise return or debut on the show?",stip:"Prop",pts:1,opts:["Yes","No"]},
+   {id:"main",title:"What closes the show?",stip:"Prop",pts:1,opts:["Reigns vs. Zayn","Rhodes vs. Orton","Morgan vs. Green"]}
+  ]
+ }
+];
+const TABKEY="kik-tab";
+const HOSTS=[0,1,2];
+const DEFAULT_NAMES=["Nisa","Dex","Matt"];
+/* Results already decided, written once if the database doesn't have them yet */
+const KNOWN={mitb:{whc:0,wwc:2,mmitb:3,wmitb:5,femi:0,cash:1,titles:1,return:1,main:2}};
+const S={names:DEFAULT_NAMES.slice(),events:{}};
+EVENTS.forEach(e=>S.events[e.id]={picks:{},results:{}});
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const evById=id=>EVENTS.find(e=>e.id===id);
+const items=ev=>[...ev.matches,...ev.props];
+const validIdx=(ev,mid,v)=>{const m=items(ev).find(x=>x.id===mid);return !!m&&Number.isInteger(v)&&v>=0&&v<m.opts.length};
+
+let tab="cj";try{const t=localStorage.getItem(TABKEY);if(t)tab=t}catch(e){}
+if(!["season",...EVENTS.map(e=>e.id)].includes(tab))tab="cj";
+
+let store=null, connected=false;
+const $=id=>document.getElementById(id);
+function setStatus(state,text){const s=$("status");s.dataset.state=state;s.textContent=text}
+let flashT;function flash(t){const m=$("msg");m.textContent=t;clearTimeout(flashT);flashT=setTimeout(()=>m.textContent="",5000)}
+
+/* ---------- rendering ---------- */
+function eventScores(ev){
+  const st=S.events[ev.id],tot=HOSTS.map(()=>0);let max=0;
+  items(ev).forEach(m=>{const r=st.results[m.id];if(r==null)return;max+=m.pts;
+    HOSTS.forEach(i=>{if(st.picks[m.id+"|"+i]===r)tot[i]+=m.pts})});
+  return {tot,max};
+}
+function card(ev,m){
+  const pre=ev.id+"-"+m.id;
+  const head=`<tr><th class="name" scope="col">${m.stip.startsWith("Prop")?"Answer":"Contender"}</th>${HOSTS.map(i=>`<th scope="col" data-h="${i}">${esc(S.names[i])}</th>`).join("")}<th class="res" scope="col">Result</th></tr>`;
+  const rows=m.opts.map((o,oi)=>`<tr data-o="${oi}"><td class="name">${esc(o)}</td>${HOSTS.map(i=>`<td data-p="${i}"><input class="pick" type="radio" id="${pre}-p${i}-${oi}" name="${pre}-p${i}" value="${oi}" data-m="${m.id}" data-host="${i}" aria-label="${esc(S.names[i])} picks ${esc(o)}"></td>`).join("")}<td class="res"><input class="pick" type="checkbox" id="${pre}-r-${oi}" data-m="${m.id}" data-r="${oi}" aria-label="${esc(o)} won"></td></tr>`).join("");
+  return `<article class="match${m.case?" case":""}" data-card="${m.id}"><div class="mh"><div><div class="stip">${esc(m.stip)}${m.reported?'<span class="flag">Reported, not official</span>':""}</div><h3>${esc(m.title)}</h3></div><span class="pts">${m.pts} pt${m.pts>1?"s":""}</span></div><div class="grid"><table>${head}${rows}</table></div></article>`;
+}
+function renderTabs(){
+  const tabs=[...EVENTS.map(e=>({id:e.id,label:e.tab,chip:e.chip||""})),{id:"season",label:"Season standings"}];
+  $("tabs").innerHTML=tabs.map(t=>`<button class="tab" role="tab" id="tab-${t.id}" data-tab="${t.id}" aria-selected="${tab===t.id}">${esc(t.label)}${t.chip?`<span class="chip">${esc(t.chip)}</span>`:""}</button>`).join("");
+}
+function renderBoard(){
+  $("board").innerHTML=HOSTS.map(i=>`<div class="who" data-w="${i}"><input id="name-${i}" value="${esc(S.names[i])}" aria-label="Host ${i+1} name" maxlength="24"><span class="score" data-s="${i}">0</span></div>`).join("");
+}
+function renderView(){
+  const v=$("view"),onEvent=tab!=="season";
+  $("copy").hidden=!onEvent;$("reset").hidden=!onEvent;$("confirm").hidden=true;
+  if(!onEvent){v.innerHTML=`<div class="evhead"><h2>Season standings</h2><p class="meta">Points from every show so far.</p></div><div class="season"><table id="seasonTable"></table></div>`;return}
+  const ev=evById(tab);
+  v.innerHTML=`<div class="evhead"><h2>${esc(ev.name)}</h2><p class="meta">${esc(ev.meta)}</p><div class="evscores" id="evscores"></div></div>
+   <div class="stack">${ev.matches.map(m=>card(ev,m)).join("")}</div>
+   <h2 class="sect">Prop bets</h2><div class="stack">${ev.props.map(m=>card(ev,m)).join("")}</div>`;
+}
+/* Sync inputs to state without rebuilding, so nobody loses their place when someone else saves */
+function applyState(){
+  HOSTS.forEach(i=>{const inp=$("name-"+i);if(inp&&document.activeElement!==inp)inp.value=S.names[i];
+    document.querySelectorAll(`th[data-h="${i}"]`).forEach(th=>th.textContent=S.names[i])});
+  if(tab!=="season"){const st=S.events[tab];
+    document.querySelectorAll("#view input.pick").forEach(x=>{
+      x.checked=x.type==="radio"?st.picks[x.dataset.m+"|"+x.dataset.host]===+x.value:st.results[x.dataset.m]===+x.dataset.r})}
+  paint();
+}
+function paint(){
+  const per=EVENTS.map(eventScores);
+  const season=HOSTS.map(i=>per.reduce((a,p)=>a+p.tot[i],0)),smax=per.reduce((a,p)=>a+p.max,0),top=Math.max(...season);
+  season.forEach((t,i)=>{$("board").querySelector(`[data-s="${i}"]`).innerHTML=`${t}<small> / ${smax}</small>`;
+    $("board").querySelector(`[data-w="${i}"]`).classList.toggle("lead",top>0&&t===top)});
+  if(tab==="season"){
+    const head=`<tr><th class="name" scope="col">Event</th>${HOSTS.map(i=>`<th scope="col">${esc(S.names[i])}</th>`).join("")}<th scope="col">Points decided</th></tr>`;
+    const rows=EVENTS.map((ev,k)=>{const p=per[k],m=Math.max(...p.tot);return `<tr><td class="name">${esc(ev.name)}</td>${p.tot.map(t=>`<td class="${p.max&&t===m&&m>0?"top":""}">${t}</td>`).join("")}<td>${p.max}</td></tr>`}).join("");
+    $("seasonTable").innerHTML=head+rows+`<tr class="total"><td class="name">Season</td>${season.map(t=>`<td>${t}</td>`).join("")}<td>${smax}</td></tr>`;
+    return;
+  }
+  const ev=evById(tab),st=S.events[ev.id],k=EVENTS.indexOf(ev);
+  $("evscores").innerHTML=HOSTS.map(i=>`<span>${esc(S.names[i])} <b>${per[k].tot[i]}</b> / ${per[k].max}</span>`).join("");
+  items(ev).forEach(m=>{
+    const art=document.querySelector(`[data-card="${m.id}"]`),r=st.results[m.id];
+    art.querySelectorAll("tr[data-o]").forEach(tr=>tr.classList.toggle("winner",r!=null&&+tr.dataset.o===r));
+    HOSTS.forEach(i=>{const p=st.picks[m.id+"|"+i];
+      art.querySelectorAll(`td[data-p="${i}"]`).forEach(td=>{td.classList.remove("hit","miss");
+        if(r!=null&&p!=null&&+td.parentNode.dataset.o===p)td.classList.add(p===r?"hit":"miss")})});
+  });
+}
+function go(t){tab=t;try{localStorage.setItem(TABKEY,t)}catch(e){}renderTabs();renderView();applyState()}
+
+/* ---------- saving: one write at a time per document ---------- */
+const chains={};
+function put(path,data){
+  if(!store){flash("Not connected to the pick database yet, so that change wasn't saved.");return}
+  chains[path]=(chains[path]||Promise.resolve()).then(()=>store.set(path,data)).catch(e=>{
+    if(e&&e.code==="permission-denied")flash("The database refused that change. Check the Firestore rules.");
+    else flash("That change didn't save. Check your connection and try again.")});
+}
+function selFor(ev,h){const st=S.events[ev],sel={};for(const k in st.picks){const [mid,hh]=k.split("|");if(+hh===h)sel[mid]=st.picks[k]}return sel}
+const savePicks=(ev,h)=>put(`picks/${ev}-${h}`,{sel:selFor(ev,h)});
+const saveResults=ev=>put(`events/${ev}`,{results:{...S.events[ev].results}});
+const saveNames=()=>put("season/settings",{names:S.names.slice()});
+
+/* ---------- controls ---------- */
+$("tabs").addEventListener("click",e=>{const b=e.target.closest("[data-tab]");if(b)go(b.dataset.tab)});
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.id&&t.id.startsWith("name-")){const i=+t.id.slice(5);S.names[i]=t.value.trim().slice(0,24)||`Host ${i+1}`;t.value=S.names[i];saveNames();applyState();return}
+  if(!t.dataset.m||tab==="season")return;const st=S.events[tab];
+  if(t.type==="radio"){st.picks[t.dataset.m+"|"+t.dataset.host]=+t.value;savePicks(tab,+t.dataset.host)}
+  else if(t.dataset.r!=null){
+    if(t.checked)st.results[t.dataset.m]=+t.dataset.r;else delete st.results[t.dataset.m];
+    saveResults(tab)}
+  applyState();
+});
+document.addEventListener("input",e=>{
+  if(e.target.id&&e.target.id.startsWith("name-")){const i=+e.target.id.slice(5);
+    document.querySelectorAll(`th[data-h="${i}"]`).forEach(th=>th.textContent=e.target.value||`Host ${i+1}`)}
+});
+function asText(){
+  const ev=evById(tab),st=S.events[ev.id];
+  let out=`KEEPING IT KAYFABE — ${ev.name.toUpperCase()} PICKS\n`;
+  items(ev).forEach(m=>{out+=`\n${m.title} (${m.pts}pt)\n`;HOSTS.forEach(i=>{const p=st.picks[m.id+"|"+i];out+=`  ${S.names[i]}: ${p!=null?m.opts[p]:"—"}\n`});
+    if(st.results[m.id]!=null)out+=`  RESULT: ${m.opts[st.results[m.id]]}\n`});
+  return out;
+}
+$("copy").addEventListener("click",()=>{
+  const txt=asText();
+  const fallback=()=>{flash("Copy is blocked here. Select the text below instead.");
+    let pre=$("fallback");if(!pre){pre=document.createElement("textarea");pre.id="fallback";pre.rows=12;document.querySelector(".tools").after(pre)}
+    pre.value=txt;pre.select()};
+  try{navigator.clipboard.writeText(txt).then(()=>flash("Copied"),fallback)}catch(e){fallback()}
+});
+$("reset").addEventListener("click",()=>{$("confirm").hidden=false;$("reset").hidden=true});
+$("no").addEventListener("click",()=>{$("confirm").hidden=true;$("reset").hidden=false});
+$("yes").addEventListener("click",()=>{
+  S.events[tab]={picks:{},results:{}};HOSTS.forEach(h=>savePicks(tab,h));saveResults(tab);
+  $("confirm").hidden=true;$("reset").hidden=false;flash("Cleared");applyState();
+});
+
+/* ---------- live connection (the module script below hands in the Firebase store) ---------- */
+const connectTimer=setTimeout(()=>{if(!connected)setStatus("warn","Can't reach the pick database yet. Check your connection and reload.")},10000);
+window.startApp=function(adapter){
+  store=adapter;
+  const got={events:false,picks:false,names:false};
+  const check=()=>{if(got.events&&got.picks&&got.names&&!connected){connected=true;clearTimeout(connectTimer);setStatus("ok","Live. Everyone with this link sees the same picks.")}};
+  const fail=e=>{clearTimeout(connectTimer);setStatus("warn",e&&e.code==="permission-denied"?"The pick database is refusing reads. Check the Firestore rules.":"Lost the connection to the pick database. Reload the page to reconnect.")};
+  store.watchColl("events",(docs,fromCache)=>{
+    EVENTS.forEach(ev=>S.events[ev.id].results={});
+    docs.forEach(d=>{const ev=evById(d.id);if(!ev||!d.data)return;const r=d.data.results||{};
+      for(const mid in r)if(validIdx(ev,mid,r[mid]))S.events[ev.id].results[mid]=r[mid]});
+    if(!fromCache&&!got.events){got.events=true;
+      for(const id in KNOWN)if(!docs.some(d=>d.id===id)){Object.assign(S.events[id].results,KNOWN[id]);saveResults(id)}
+      check()}
+    applyState();
+  },fail);
+  store.watchColl("picks",(docs,fromCache)=>{
+    EVENTS.forEach(ev=>S.events[ev.id].picks={});
+    docs.forEach(d=>{const m=/^([a-z0-9]+)-([0-2])$/.exec(d.id);if(!m||!d.data)return;const ev=evById(m[1]);if(!ev)return;
+      const sel=d.data.sel||{};for(const mid in sel)if(validIdx(ev,mid,sel[mid]))S.events[ev.id].picks[mid+"|"+m[2]]=sel[mid]});
+    if(!fromCache&&!got.picks){got.picks=true;check()}
+    applyState();
+  },fail);
+  store.watchDoc("season/settings",(data,fromCache)=>{
+    const n=data&&data.names;
+    if(Array.isArray(n)&&n.length===3)S.names=n.map((x,i)=>String(x||"").slice(0,24)||`Host ${i+1}`);
+    if(!fromCache&&!got.names){got.names=true;if(!data)saveNames();check()}
+    applyState();
+  },fail);
+};
+renderBoard();go(tab);
+</script>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getFirestore,doc,collection,onSnapshot,setDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const firebaseConfig={
+  apiKey:"AIzaSyClxbqKn-kyzRW2hb8OQqUs4fuq3pdMQgM",
+  authDomain:"kik-wrestling-ple-pick-em.firebaseapp.com",
+  projectId:"kik-wrestling-ple-pick-em",
+  storageBucket:"kik-wrestling-ple-pick-em.firebasestorage.app",
+  messagingSenderId:"519374784243",
+  appId:"1:519374784243:web:68dd5a5b7752de4d495986"
+};
+const fs=getFirestore(initializeApp(firebaseConfig));
+window.startApp({
+  watchColl:(name,next,err)=>onSnapshot(collection(fs,name),s=>next(s.docs.map(d=>({id:d.id,data:d.data()})),s.metadata.fromCache),err),
+  watchDoc:(path,next,err)=>onSnapshot(doc(fs,path),d=>next(d.exists()?d.data():null,d.metadata.fromCache),err),
+  set:(path,data)=>setDoc(doc(fs,path),data)
+});
+</script>
+</html>
