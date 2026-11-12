@@ -143,7 +143,7 @@ const EVENTS=[
    {id:"main",title:"What closes the show?",stip:"Prop",pts:1,opts:["Reigns vs. Knight","Women's title","Men's ladder","Women's ladder"]}
   ]
  },
- {id:"cj",tab:"Crown Jewel",chip:"Sat",name:"Crown Jewel",meta:"Sat Nov 7 · Riyadh, Saudi Arabia · 11:00 AM Central",
+ {id:"cj",tab:"Crown Jewel",name:"Crown Jewel",meta:"Sat Nov 7 · Riyadh, Saudi Arabia · 11:00 AM Central",
   matches:[
    {id:"mcj",title:"Roman Reigns vs. Sami Zayn",stip:"Men's Crown Jewel Championship · World vs. Undisputed champ",pts:1,opts:["Roman Reigns","Sami Zayn"]},
    {id:"wcj",title:"Liv Morgan vs. Chelsea Green",stip:"Women's Crown Jewel Championship · Champ vs. champ",pts:1,opts:["Liv Morgan","Chelsea Green"]},
@@ -157,9 +157,27 @@ const EVENTS=[
    {id:"return",title:"Surprise return or debut on the show?",stip:"Prop",pts:1,opts:["Yes","No"]},
    {id:"main",title:"What closes the show?",stip:"Prop",pts:1,opts:["Reigns vs. Zayn","Rhodes vs. Orton","Morgan vs. Green"]}
   ]
+ },
+ {id:"fullgear",tab:"AEW Full Gear",chip:"Sat",name:"AEW Full Gear",meta:"Sat Nov 14 · Mortgage Matchup Center, Phoenix · 5:00 PM Central",
+  matches:[
+   {id:"world",title:"Will Ospreay (c) vs. Kyle Fletcher",stip:"AEW World Championship",pts:1,opts:["Will Ospreay","Kyle Fletcher"]},
+   {id:"wworld",title:"Mercedes Moné (c) vs. Marina Shafir",stip:"AEW Women's World Championship",pts:1,opts:["Mercedes Moné","Marina Shafir"]},
+   {id:"anarchy",title:"Death Riders & The Conglomeration vs. The Cut",stip:"Anarchy in the Arena · Moxley, Kidd, Garcia, Cassidy, Strong & O'Reilly vs. White, The Gunns, Austin, Finlay & Connors",pts:1,opts:["Death Riders & The Conglomeration","The Cut"]},
+   {id:"trios",title:"Page, King & Bandido (c) vs. Swerve & The New Level",stip:"AEW World Trios Championship · Texas Death Match",pts:2,opts:["Hangman Page, Brody King & Bandido","Swerve Strickland & The New Level"]},
+   {id:"intl",title:"Kazuchika Okada (c) vs. Adam Copeland",stip:"AEW International Championship",pts:1,opts:["Kazuchika Okada","Adam Copeland"]},
+   {id:"natl",title:"Tommaso Ciampa (c) vs. Ilja Dragunov",stip:"AEW National Championship",pts:1,opts:["Tommaso Ciampa","Ilja Dragunov"]},
+   {id:"tag",title:"The Young Bucks (c) vs. Mark Davis & Jake Doyle",stip:"AEW World Tag Team Championship",pts:1,opts:["The Young Bucks","Mark Davis & Jake Doyle"]},
+   {id:"wtag",title:"The Brawling Birds (c) vs. Wrathlander",stip:"AEW Women's World Tag Team Championship",pts:1,opts:["Jamie Hayter & Alex Windsor","Harley Cameron & Kris Statlander"]},
+   {id:"tbs",title:"Queen Aminata (c) vs. Persephone vs. Maya World",stip:"TBS Championship · Three-way · Pre-show",pts:1,opts:["Queen Aminata","Persephone","Maya World"]}
+  ],
+  props:[
+   {id:"titles",title:"How many titles change hands?",stip:"Prop · eight titles on the line",pts:1,opts:["0","1","2","3 or more"]},
+   {id:"return",title:"Surprise return or debut on the show?",stip:"Prop",pts:1,opts:["Yes","No"]},
+   {id:"main",title:"What closes the show?",stip:"Prop",pts:1,opts:["Ospreay vs. Fletcher","Moné vs. Shafir","Anarchy in the Arena","Trios Texas Death Match"]}
+  ]
  }
 ];
-const TABKEY="kik-tab";
+const TABKEY="kik-tab-fullgear";
 const HOSTS=[0,1,2];
 const DEFAULT_NAMES=["Nisa","Dex","Matt"];
 /* Results already decided, written once if the database doesn't have them yet */
@@ -171,8 +189,8 @@ const evById=id=>EVENTS.find(e=>e.id===id);
 const items=ev=>[...ev.matches,...ev.props];
 const validIdx=(ev,mid,v)=>{const m=items(ev).find(x=>x.id===mid);return !!m&&Number.isInteger(v)&&v>=0&&v<m.opts.length};
 
-let tab="cj";try{const t=localStorage.getItem(TABKEY);if(t)tab=t}catch(e){}
-if(!["season",...EVENTS.map(e=>e.id)].includes(tab))tab="cj";
+let tab="fullgear";try{const t=localStorage.getItem(TABKEY);if(t)tab=t}catch(e){}
+if(!["season",...EVENTS.map(e=>e.id)].includes(tab))tab="fullgear";
 
 let store=null, connected=false;
 const $=id=>document.getElementById(id);
